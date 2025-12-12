@@ -1,0 +1,39 @@
+{
+  "name": "@nawthtech/llm-verifier",
+  "version": "1.0.0",
+  "description": "AI-powered content verification using LLMs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "lint": "eslint . --ext .ts",
+    "verify": "node -r ts-node/register cli.ts",
+    "prepublish": "npm run build"
+  },
+  "keywords": [
+    "llm",
+    "verification",
+    "ai",
+    "content-moderation",
+    "safety"
+  ],
+  "author": "NawthTech",
+  "license": "MIT",
+  "dependencies": {
+    "@sentry/cloudflare": "^7.0.0",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

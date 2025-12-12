@@ -1,0 +1,299 @@
+name = "nawthtech-api"
+main = "src/index.ts"
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2025-12-09"
+
+# ==================== OBSERVABILITY ====================
+[observability]
+enabled = true
+head_sampling_rate = 1
+upload_source_maps = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+persist = true
+head_sampling_rate = 1
+
+[[observability.destinations]]
+type = "traces"
+name = "sentry-traces"
+endpoint = "https://o4510508331892736.ingest.de.sentry.io/api/4510508452413520/integration/otlp/v1/traces"
+headers = { "x-sentry-auth" = "sentry sentry_key=703dc8c9404510702c2c20ce3aba24d4" }
+
+[[observability.destinations]]
+type = "logs"
+name = "sentry-logs"
+endpoint = "https://o4510508331892736.ingest.de.sentry.io/api/4510508452413520/integration/otlp/v1/logs"
+headers = { "x-sentry-auth" = "sentry sentry_key=703dc8c9404510702c2c20ce3aba24d4" }
+
+# ==================== AI MONITORING DATABASE ====================
+# قاعدة بيانات D1 للمراقبة AI (جديدة)
+[[d1_databases]]
+binding = "AI_MONITORING_DB"
+database_name = "ai-monitoring-db"
+database_id = "ai-database-id-here"  # ⚠️ استبدل بمعرف قاعدة البيانات الحقيقي
+migrations_dir = "migrations/ai"
+preview_database_id = "ai-preview-db-id"  # ⚠️ استبدل بمعرف قاعدة بيانات المعاينة
+
+# قاعدة بيانات D1 الرئيسية (موجودة)
+[[d1_databases]]
+binding = "DB"
+database_name = "nawthtech-db1"
+database_id = "bbf15aeb-0718-47c8-9723-d8a83f79e6cb"
+migrations_dir = "migrations"
+workers_url = "db.nawth.workers.dev"
+preview_url = "*-db.nawth.workers.dev"
+
+# ==================== ANALYTICS ENGINE ====================
+# لتخزين وتحليل مقاييس AI
+[[analytics_engine_datasets]]
+binding = "AI_ANALYTICS"
+dataset = "ai_monitoring_analytics"
+
+# ==================== AI PROVIDERS CONFIGURATION ====================
+# متغيرات البيئة لمزودي AI
+[vars]
+ENVIRONMENT = "production"
+APP_NAME = "NawthTech"
+
+# Sentry Configuration
+SENTRY_DSN = "https://703dc8c9404510702c2c20ce3aba24d4@o4510508331892736.ingest.de.sentry.io/4510508452413520"
+SENTRY_ENVIRONMENT = "production"
+SENTRY_RELEASE = "nawthtech-worker@${git.commit.short}"
+ENABLE_SENTRY = "true"
+
+# AI Monitoring
+ENABLE_AI_MONITORING = "true"
+AI_MONITORING_SAMPLE_RATE = "1.0"
+AI_HEALTH_CHECK_INTERVAL = "300"  # 5 دقائق
+
+# AI Providers Configuration
+# OpenAI
+OPENAI_API_KEY = "${OPENAI_API_KEY}"
+OPENAI_ORGANIZATION = "${OPENAI_ORG}"
+OPENAI_BASE_URL = "https://api.openai.com/v1"
+
+# Google Gemini
+GEMINI_API_KEY = "${GEMINI_API_KEY}"
+GEMINI_MODEL = "gemini-1.5-pro"
+GEMINI_MAX_TOKENS = "8192"
+
+# Anthropic Claude
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY}"
+ANTHROPIC_MODEL = "claude-3-opus-20240229"
+ANTHROPIC_MAX_TOKENS = "4096"
+
+# Hugging Face
+HUGGINGFACE_TOKEN = "${HUGGINGFACE_TOKEN}"
+HUGGINGFACE_API_URL = "https://api-inference.huggingface.co"
+
+# Ollama (للتشغيل المحلي)
+OLLAMA_BASE_URL = "http://localhost:11434"
+OLLAMA_MODEL = "llama3.2:3b"
+ENABLE_OLLAMA = "true"
+
+# AI Rate Limits
+AI_RATE_LIMIT_PER_MINUTE = "60"
+AI_RATE_LIMIT_PER_HOUR = "1000"
+AI_MAX_CONCURRENT_REQUESTS = "10"
+
+# AI Cost Tracking
+AI_COST_TRACKING_ENABLED = "true"
+AI_COST_ALERT_THRESHOLD = "100.00"  # دولار
+
+# AI Performance
+AI_REQUEST_TIMEOUT_MS = "30000"
+AI_MAX_RETRIES = "3"
+AI_RETRY_DELAY_MS = "1000"
+
+# AI Content Moderation
+AI_CONTENT_MODERATION_ENABLED = "true"
+AI_TOXICITY_THRESHOLD = "0.8"
+
+# ==================== AI AGENTS SPECIFIC ====================
+[vars.ai_agents]
+# Agent 1: Content Generation
+CONTENT_AGENT_ENABLED = "true"
+CONTENT_AGENT_MODEL = "gpt-4"
+CONTENT_AGENT_MAX_TOKENS = "2000"
+CONTENT_AGENT_TEMPERATURE = "0.7"
+
+# Agent 2: Translation
+TRANSLATION_AGENT_ENABLED = "true"
+TRANSLATION_AGENT_MODEL = "claude-3-sonnet"
+TRANSLATION_AGENT_MAX_LANGUAGES = "50"
+
+# Agent 3: Image Analysis
+IMAGE_AGENT_ENABLED = "true"
+IMAGE_AGENT_MODEL = "gemini-1.5-pro-vision"
+IMAGE_AGENT_MAX_SIZE_MB = "10"
+
+# Agent 4: Video Processing
+VIDEO_AGENT_ENABLED = "true"
+VIDEO_AGENT_MODEL = "runwayml/stable-diffusion"
+VIDEO_AGENT_MAX_DURATION_SECONDS = "60"
+
+# ==================== AI MONITORING ENDPOINTS ====================
+[vars.monitoring_endpoints]
+AI_STATS_ENDPOINT = "/api/v1/ai/monitoring/stats"
+AI_HEALTH_ENDPOINT = "/api/v1/ai/monitoring/health"
+AI_ALERTS_ENDPOINT = "/api/v1/ai/monitoring/alerts"
+AI_METRICS_ENDPOINT = "/api/v1/ai/monitoring/metrics"
+AI_LLM_STATS_ENDPOINT = "/api/v1/ai/monitoring/llm-stats"
+
+# ==================== CRON JOBS FOR AI MONITORING ====================
+[triggers]
+crons = [
+  # Health checks every 5 minutes
+  "*/5 * * * *",
+  # Daily reports at midnight
+  "0 0 * * *",
+  # Cost analysis every hour
+  "0 * * * *",
+  # Performance metrics every 15 minutes
+  "*/15 * * * *",
+]
+
+# ==================== BUILD CONFIGURATION ====================
+[build]
+command = "npm run build"
+upload = { format = "service-worker" }
+
+[build.upload]
+include = ["dist/*", "src/ai/**/*"]
+exclude = ["node_modules", "tests", "**/*.test.*"]
+
+# Sentry source maps configuration
+[build.upload.rules]
+type = "sentry"
+url = "https://sentry.io/api/0/projects/nawthtech/nawthtech-worker/releases/"
+token = "${SENTRY_AUTH_TOKEN}"
+
+[otlp]
+endpoint = "https://o4510508331892736.ingest.de.sentry.io/api/4510508452413520/integration/otlp/v1/traces"
+
+# ==================== ENVIRONMENT-SPECIFIC SETTINGS ====================
+[env.production]
+name = "nawthtech-api-production"
+vars = { 
+  SENTRY_ENVIRONMENT = "production",
+  AI_ENVIRONMENT = "production",
+  AI_LOG_LEVEL = "info",
+  AI_MONITORING_ENABLED = "true"
+}
+
+[env.staging]
+name = "nawthtech-api-staging"
+vars = { 
+  SENTRY_ENVIRONMENT = "staging",
+  AI_ENVIRONMENT = "staging",
+  AI_LOG_LEVEL = "debug",
+  AI_MONITORING_ENABLED = "true"
+}
+
+[env.development]
+name = "nawthtech-api-dev"
+vars = { 
+  SENTRY_ENVIRONMENT = "development",
+  SENTRY_DEBUG = "true",
+  AI_ENVIRONMENT = "development",
+  AI_LOG_LEVEL = "debug",
+  AI_MONITORING_ENABLED = "false",
+  ENABLE_OLLAMA = "true",
+  OLLAMA_BASE_URL = "http://localhost:11434"
+}
+
+# ==================== AI-SPECIFIC ENVIRONMENTS ====================
+[env.ai-development]
+name = "nawthtech-ai-dev"
+compatibility_date = "2025-12-09"
+vars = {
+  AI_FEATURE_FLAGS = "experimental_agents,beta_models",
+  AI_DEVELOPMENT_MODE = "true",
+  AI_CACHE_ENABLED = "false"
+}
+
+[env.ai-staging]
+name = "nawthtech-ai-staging"
+compatibility_date = "2025-12-09"
+vars = {
+  AI_FEATURE_FLAGS = "stable_agents",
+  AI_CACHE_ENABLED = "true",
+  AI_CACHE_TTL_SECONDS = "3600"
+}
+
+[env.ai-production]
+name = "nawthtech-ai-production"
+compatibility_date = "2025-12-09"
+vars = {
+  AI_FEATURE_FLAGS = "production_agents,monitoring_enabled",
+  AI_CACHE_ENABLED = "true",
+  AI_CACHE_TTL_SECONDS = "1800",
+  AI_RATE_LIMITING_ENABLED = "true"
+}
+
+# ==================== ROUTES ====================
+# Routes for AI endpoints
+routes = [
+  { pattern = "api.nawth.tech/ai/*", zone_name = "nawth.tech" },
+  { pattern = "ai.nawth.tech/*", zone_name = "nawth.tech" },
+  { pattern = "monitoring.nawth.tech/*", zone_name = "nawth.tech" }
+]
+
+# ==================== AI BINDINGS ====================
+# KV namespaces for AI caching
+[[kv_namespaces]]
+binding = "AI_CACHE"
+id = "ai-cache-namespace-id"  # ⚠️ استبدل بمعرف KV الحقيقي
+preview_id = "ai-cache-preview-id"
+
+# KV for AI rate limiting
+[[kv_namespaces]]
+binding = "AI_RATE_LIMIT"
+id = "ai-rate-limit-namespace-id"  # ⚠️ استبدل بمعرف KV الحقيقي
+preview_id = "ai-rate-limit-preview-id"
+
+# R2 for AI model storage
+[[r2_buckets]]
+binding = "AI_MODELS"
+bucket_name = "ai-models-bucket"
+preview_bucket_name = "ai-models-preview"
+
+# ==================== AI WORKERS ====================
+# Additional workers for AI processing
+[[workers]]
+name = "nawthtech-ai-video"
+route = "video-ai.nawth.tech/*"
+
+[[workers]]
+name = "nawthtech-ai-image"
+route = "image-ai.nawth.tech/*"
+
+[[workers]]
+name = "nawthtech-ai-monitoring"
+route = "ai-monitoring.nawth.tech/*"
+
+# ==================== AI QUEUES ====================
+# Queues for async AI processing
+[[queues.producers]]
+binding = "AI_QUEUE"
+queue = "ai-processing-queue"
+delivery_delay = 0
+
+[[queues.consumers]]
+queue = "ai-processing-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "ai-dlq"
+
+# Dead letter queue for failed AI jobs
+[[queues.producers]]
+binding = "AI_DLQ"
+queue = "ai-dlq"
